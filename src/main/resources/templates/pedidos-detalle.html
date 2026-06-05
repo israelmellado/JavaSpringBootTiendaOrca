@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle Pedido - Tienda ORCA</title>
+    <link rel="stylesheet" th:href="@{/estilo.css}">
+    <style>
+        .tabla-datos td, .tabla-datos th {
+            font-size: 11px;
+            padding: 4px 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 th:text="'Pedido #' + ${pedido.numPedido}">Pedido</h1>
+        <div>
+            <a th:href="@{/pedidos}"><button class="btn btn-info">Volver</button></a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Añadir artículo -->
+        <div class="panel">
+            <h2>➕ Añadir Artículo</h2>
+            
+            <form th:action="@{/pedidos/añadir-linea}" method="post">
+                <input type="hidden" name="idPedido" th:value="${pedido.id}">
+                
+                <div class="form-grid" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <div class="form-group">
+                        <label>Artículo *</label>
+                        <select name="idArticulo" required>
+                            <option value="">-- Seleccionar --</option>
+                            <option th:each="articulo : ${articulos}" 
+                                    th:value="${articulo.id}" 
+                                    th:text="${articulo.codigoId} + ' - ' + ${articulo.descripcion} + ' (' + ${articulo.precioVenta} + ' €)'">
+                                Artículo
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Cantidad *</label>
+                        <input type="number" name="cantidad" value="1" min="1" required style="width:60px;">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning">Añadir</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Líneas del pedido -->
+        <div class="panel">
+            <h2>Artículos</h2>
+            
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Artículo</th>
+                        <th>Cant.</th>
+                        <th>Precio</th>
+                        <th>Envío</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <th:block th:each="linea : ${lineas}">
+                    <tr>
+                        <td th:text="${linea.idArticulo}">id</td>
+                        <td>Artículo</td>
+                        <td th:text="${linea.cantidad}">cant</td>
+                        <td th:text="${linea.precioVenta} + ' €'">0 €</td>
+                        <td th:text="${linea.gastosEnvio} + ' €'">0 €</td>
+                        <td th:text="${linea.total} + ' €'">0 €</td>
+                    </tr>
+                    </th:block>
+                    
+                    <tr th:if="${#lists.isEmpty(lineas)}">
+                        <td colspan="6" style="text-align:center; color:#888;">Sin artículos</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totales -->
+        <div class="panel">
+            <div style="text-align:right;">
+                <p>Productos: <span th:text="${pedido.totalProductos} + ' €'">0 €</span></p>
+                <p>Envío: <span th:text="${pedido.envioTotal} + ' €'">0 €</span></p>
+                <p><strong>Total: <span th:text="${pedido.totalProductos.add(pedido.envioTotal)} + ' €'">0 €</span></strong></p>
+            </div>
+            
+            <!-- Finalizar/Cancelar -->
+            <form th:action="@{/pedidos/finalizar/{id}(id=${pedido.id})}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-primary" onclick="return confirm('¿Finalizar pedido?')">Finalizar</button>
+            </form>
+            
+            <form th:action="@{/pedidos/cancelar/{id}(id=${pedido.id})}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Cancelar pedido?')">Cancelar</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

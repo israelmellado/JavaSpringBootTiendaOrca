@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nuevo Pedido - Tienda ORCA</title>
+    <link rel="stylesheet" th:href="@{/estilo.css}">
+</head>
+<body>
+    <div class="header">
+        <h1>➕ Nuevo Pedido - Tienda ORCA</h1>
+        <div>
+            <a th:href="@{/pedidos}"><button class="btn btn-info">Volver</button></a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="panel">
+            <h2>Seleccionar Cliente</h2>
+            
+            <form th:action="@{/pedidos/crear}" method="post">
+                <div class="form-group">
+                    <label>Cliente *</label>
+                    <select name="idCliente" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option th:each="cliente : ${clientes}" 
+                                th:value="${cliente.id}" 
+                                th:text="${cliente.nombre} + ' (' + ${cliente.email} + ')'">
+                            Cliente
+                        </option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Continuar</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

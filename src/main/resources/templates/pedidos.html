@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión Pedidos - Tienda ORCA</title>
+    <link rel="stylesheet" th:href="@{/estilo.css}">
+    <style>
+        /* Botones pequeños para pedidos */
+        .btn-ver { padding: 2px 6px; font-size: 12px !important; }
+        .btn-env { padding: 2px 6px; font-size: 12px !important; }
+        .btn-can { padding: 2px 6px; font-size: 12px !important; }
+
+        .badge-small { font-size: 16px; }
+
+        /* Tabla */
+        .tabla-datos {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+
+        .tabla-datos th {
+            font-size: 14px !important;;
+            font-weight: bold;
+            padding: 2px 4px;
+        }
+
+        .tabla-datos td {
+            padding: 2px 4px;
+            max-width: 120px;
+            overflow: hidden;
+            font-size: 12px !important;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tabla-datos td.acciones {
+            text-align: left;
+        }
+
+        /* Badges */
+        .badge-pendiente { background: #fff3cd; color: #856404; }
+        .badge-enviado { background: #d1ecf1; color: #0c5460; }
+        .badge-cancelado { background: #f8d7da; color: #721c24; }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Pedidos - Tienda ORCA</h1>
+        <div>
+            <a th:href="@{/menu}"><button class="btn btn-info">Volver</button></a>
+            <a th:href="@{/logout}"><button class="btn btn-danger">Cerrar Sesión</button></a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Mensajes -->
+        <div th:if="${mensaje}" class="mensaje mensaje-exito">
+            <span th:text="${mensaje}"></span>
+        </div>
+        <div th:if="${error}" class="mensaje mensaje-error">
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Botón nuevo pedido -->
+        <div class="panel">
+            <a th:href="@{/pedidos/nuevo}"><button class="btn btn-primary">➕ Nuevo Pedido</button></a>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <a th:href="@{/pedidos}"><button class="tab" th:classappend="${activa == 'todos'} ? 'active'">Todos</button></a>
+            <a th:href="@{/pedidos/estado/PENDIENTE}"><button class="tab" th:classappend="${activa == 'PENDIENTE'} ? 'active'">Pendientes</button></a>
+            <a th:href="@{/pedidos/estado/ENVIADO}"><button class="tab" th:classappend="${activa == 'ENVIADO'} ? 'active'">Enviados</button></a>
+            <a th:href="@{/pedidos/estado/CANCELADO}"><button class="tab" th:classappend="${activa == 'CANCELADO'} ? 'active'">Cancelados</button></a>
+        </div>
+
+        <!-- Lista de Pedidos -->
+        <div class="panel">
+            <h2 th:switch="${activa}">
+                <span th:case="'PENDIENTE'">Pedidos Pendientes</span>
+                <span th:case="'ENVIADO'">Pedidos Enviados</span>
+                <span th:case="'CANCELADO'">Pedidos Cancelados</span>
+                <span th:case="*">Todos los Pedidos</span>
+            </h2>
+            
+            <table class="tabla-datos" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th>Num</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Productos</th>
+                        <th>Dto.</th>
+                        <th>Subtotal</th>
+                        <th>Envío</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <th:block th:each="pedido : ${pedidos}">
+                    <tr>
+                        <td th:text="${pedido.numPedido}">num</td>
+                        <td>
+                            <th:block th:each="c : ${clientes}">
+                                <span th:if="${c.id == pedido.idCliente}" th:text="${c.email}"></span>
+                            </th:block>
+                        </td>
+                        <td>
+                            <span th:text="${#temporals.day(pedido.fechaHora)}"></span>/<span th:text="${#temporals.month(pedido.fechaHora)}"></span>/<span th:text="${#temporals.year(pedido.fechaHora)}"></span>
+                        </td>
+                        <td th:text="${pedido.totalProductos} + ' €'">0 €</td>
+                        <td th:text="${pedido.descuentoAplicado} + ' €'">0 €</td>
+                        <td th:text="${pedido.subtotalConDescuento} + ' €'">0 €</td>
+                        <td th:text="${pedido.envioTotal} + ' €'">0 €</td>
+                        <td th:text="${pedido.totalFinal} + ' €'">0 €</td>
+                        <td>
+                            <span class="badge" th:classappend="${'badge-' + #strings.toLowerCase(pedido.estado)}" th:text="${pedido.estado}">ESTADO</span>
+                        </td>
+                        <td class="acciones">
+                            <div th:if="${pedido.estado == 'PENDIENTE'}">
+                                <!-- Ver detalle -->
+                                <a th:href="@{/pedidos/detalle/{id}(id=${pedido.id})}">
+                                    <button class="btn btn-warning btn-ver">Ver</button>
+                                </a>
+
+                                <!-- Enviar -->
+                                <form th:action="@{/pedidos/enviar/{id}(id=${pedido.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-info btn-env" onclick="return confirm('¿Enviar?')">Enviar</button>
+                                </form>
+
+                                <!-- Cancelar -->
+                                <form th:action="@{/pedidos/cancelar/{id}(id=${pedido.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-can" onclick="return confirm('¿Cancelar?')">X</button>
+                                </form>
+                            </div>
+                            <div th:if="${pedido.estado == 'ENVIADO'}">
+                                <span class="badge badge-enviado badge-small">Enviado</span>
+                            </div>
+                            <div th:if="${pedido.estado == 'CANCELADO'}">
+                                <span class="badge badge-cancelado badge-small">Cancelado</span>
+                            </div>
+                        </td>
+                    </tr>
+                    </th:block>
+                    
+                    <tr th:if="${#lists.isEmpty(pedidos)}">
+                        <td colspan="10" style="text-align:center; color:#888;">No hay pedidos</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
