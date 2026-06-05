@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:fmt="http://java.sun.com/jsp/jstl/fmt">/*Formato fecha europeo*/
 <head>
     <meta charset="UTF-8">
     <title>Gestión Clientes - Tienda ORCA</title>
@@ -148,7 +149,7 @@
                                   th:text="${cliente.esPremium} ? 'Premium' : 'Estandar'">
                             </span>
                         </td>
-                        <td th:text="${cliente.fechaAlta}">fecha</td>
+                        <td th:text="${#temporals.format(cliente.fechaAlta, 'dd/MM/yyyy')}">fecha</td>
                         <td>
                             <span class="badge" 
                                   th:classappend="${cliente.fechaBaja == null} ? 'badge-success' : 'badge-danger'"
