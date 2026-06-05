@@ -1,0 +1,36 @@
+.acciones .btn {
+            padding: 3px 8px;
+            font-size: 10px;
+            margin: 1px;
+        }
+
+        .acciones button {
+            padding: 2px 5px;
+            font-size: 9px;
+        }
+        .tabla-datos td, .tabla-datos th {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 10px;
+            padding: 7px 8px;
+        }
+
+        .tabla-datos th {
+            font-size: 9px;
+            font-weight: bold;
+        }
+       
+        .titulo-tabla {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .fila-editar { display: none; background: #fff3cd; }
+        .fila-editar.show { display: table-row; }
+        .fila-editar td { padding: 10px; }
+        .fila-editar form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .fila-editar input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        
+        .badge-premium { background: #FFD700; color: #000; font-weight: bold; }
+        .badge-estandar { background: #d4edda; color: #155724; }
