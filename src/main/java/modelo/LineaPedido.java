@@ -20,23 +20,21 @@ public class LineaPedido {
 
     @Column(name = "cantidad")
     private Integer cantidad;
+    
+    @Column(name = "subtotal")
+    private BigDecimal subtotal;
+    
+    @Column(name = "gastos_envio_linea")
+    private BigDecimal gastosEnvioLinea;
 
-    @Column(name = "precio_venta")
-    private BigDecimal precioVenta;
-
-    @Column(name = "gastos_envio")
-    private BigDecimal gastosEnvio;
 
     // Constructores
     public LineaPedido() {}
 
-    public LineaPedido(Integer idPedido, Integer idArticulo, Integer cantidad, 
-                      BigDecimal precioVenta, BigDecimal gastosEnvio) {
+    public LineaPedido(Integer idPedido, Integer idArticulo, Integer cantidad) {
         this.idPedido = idPedido;
         this.idArticulo = idArticulo;
         this.cantidad = cantidad;
-        this.precioVenta = precioVenta;
-        this.gastosEnvio = gastosEnvio;
     }
 
     // Getters y Setters
@@ -51,17 +49,14 @@ public class LineaPedido {
 
     public Integer getCantidad() { return cantidad; }
     public void setCantidad(Integer cantidad) { this.cantidad = cantidad; }
-
-    public BigDecimal getPrecioVenta() { return precioVenta; }
-    public void setPrecioVenta(BigDecimal precioVenta) { this.precioVenta = precioVenta; }
-
-    public BigDecimal getGastosEnvio() { return gastosEnvio; }
-    public void setGastosEnvio(BigDecimal gastosEnvio) { this.gastosEnvio = gastosEnvio; }
-
-    // Calculado: total línea
-    public BigDecimal getTotal() {
-        if (precioVenta == null || cantidad == null) return BigDecimal.ZERO;
-        return precioVenta.multiply(BigDecimal.valueOf(cantidad))
-            .add(gastosEnvio != null ? gastosEnvio : BigDecimal.ZERO);
+    
+    public BigDecimal getSubtotal() { return subtotal; }
+    public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
+    
+    public void setGastosEnvioLinea(BigDecimal gastosEnvioLinea) {
+        this.gastosEnvioLinea = gastosEnvioLinea;
+    }
+    public BigDecimal getGastosEnvioLinea() {
+        return gastosEnvioLinea;
     }
 }

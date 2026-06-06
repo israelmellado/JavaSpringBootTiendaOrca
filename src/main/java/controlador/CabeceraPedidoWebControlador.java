@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 @Controller
@@ -74,60 +76,86 @@ public class CabeceraPedidoWebControlador {
     @GetMapping("/detalle/{id}")
     public String detalle(@PathVariable Integer id, Model model) {
         return repository.findById(id).map(pedido -> {
+            List<LineaPedido> lineas = lineaRepository.findByIdPedido(id);
+
+            Map<Integer, Articulo> articulosMap = new HashMap<>();
+            for (Articulo a : articuloRepository.findAll()) {
+                articulosMap.put(a.getId(), a);
+            }
+
+            // Verificar si cliente es premium
+            boolean esPremium = false;
+            var cliente = clienteRepository.findById(pedido.getIdCliente());
+            if (cliente.isPresent() && cliente.get().getEsPremium()) {
+                esPremium = true;
+            }
+
             model.addAttribute("pedido", pedido);
-            model.addAttribute("lineas", lineaRepository.findByIdPedido(id));
+            model.addAttribute("lineas", lineas);
+            model.addAttribute("articulosMap", articulosMap);
             model.addAttribute("articulos", articuloRepository.findByFechaBajaIsNull());
-            return "pedido-detalle";
+            model.addAttribute("esPremium", esPremium);
+            return "pedidos-detalle";
         }).orElse("redirect:/pedidos");
     }
-
     // POST - Añadir línea
     @PostMapping("/añadir-linea")
     public String añadirLinea(@RequestParam Integer idPedido,
                            @RequestParam Integer idArticulo,
                            @RequestParam Integer cantidad,
                            Model model) {
-        
+
         var pedidoOpt = repository.findById(idPedido);
         var articuloOpt = articuloRepository.findById(idArticulo);
-        
+
         if (pedidoOpt.isPresent() && articuloOpt.isPresent()) {
             Articulo articulo = articuloOpt.get();
-            
-            LineaPedido linea = new LineaPedido(
-                idPedido,
-                idArticulo,
-                cantidad,
-                articulo.getPrecioVenta(),
-                articulo.getGastosEnvio()
-            );
+
+            // Controlar stock
+            if (articulo.getStock() != null && cantidad > articulo.getStock()) {
+                model.addAttribute("error", "Stock insuficiente. Disponible: " + articulo.getStock());
+                return "redirect:/pedidos/detalle/" + idPedido;
+            }
+
+            // Calcular subtotal (precio * cantidad)
+            BigDecimal precio = articulo.getPrecioVenta() != null ? articulo.getPrecioVenta() : BigDecimal.ZERO;
+            BigDecimal subtotal = precio.multiply(BigDecimal.valueOf(cantidad));
+            BigDecimal gastosEnvio = articulo.getGastosEnvio() != null ? articulo.getGastosEnvio() : BigDecimal.ZERO;
+            // Crear línea con subtotal
+            LineaPedido linea = new LineaPedido(idPedido, idArticulo, cantidad);
+            linea.setSubtotal(subtotal);
+            linea.setGastosEnvioLinea(gastosEnvio);
             lineaRepository.save(linea);
+
             recalcularTotales(idPedido);
         }
-        
+
         return "redirect:/pedidos/detalle/" + idPedido;
     }
 
     // POST - Finalizar pedido
     @PostMapping("/finalizar/{id}")
     public String finalizar(@PathVariable Integer id, Model model) {
-        
+
         repository.findById(id).ifPresent(pedido -> {
-            BigDecimal BigDescuento = BigDecimal.ZERO;
+            BigDecimal totalBase = pedido.getTotalProductos() != null ? pedido.getTotalProductos() : BigDecimal.ZERO;
+            BigDecimal envio = pedido.getEnvioTotal() != null ? pedido.getEnvioTotal() : BigDecimal.ZERO;
+
+            BigDecimal descuento = BigDecimal.ZERO;
             var clienteOpt = clienteRepository.findById(pedido.getIdCliente());
             if (clienteOpt.isPresent() && clienteOpt.get().getEsPremium()) {
-                BigDecimal descuento = pedido.getTotalProductos().multiply(BigDecimal.valueOf(0.30));
-                pedido.setDescuentoAplicado(descuento);
+                descuento = totalBase.multiply(BigDecimal.valueOf(0.30));
             }
-            BigDecimal descuento = null;
-            
-            BigDecimal subtotal = pedido.getTotalProductos().subtract(descuento);
+
+            pedido.setDescuentoAplicado(descuento);
+
+            BigDecimal subtotal = totalBase.subtract(descuento);
             pedido.setSubtotalConDescuento(subtotal);
-            pedido.setTotalFinal(subtotal.add(pedido.getEnvioTotal()));
-            pedido.setEstado("PENDIENTE");
+            pedido.setTotalFinal(subtotal.add(envio));
+            pedido.setEstado("FINALIZADO");
             repository.save(pedido);
         });
-        
+
         return "redirect:/pedidos";
     }
 
@@ -154,22 +182,36 @@ public class CabeceraPedidoWebControlador {
         
         return "redirect:/pedidos";
     }
-
     private void recalcularTotales(Integer idPedido) {
         repository.findById(idPedido).ifPresent(pedido -> {
             List<LineaPedido> lineas = lineaRepository.findByIdPedido(idPedido);
-            
+
             BigDecimal totalProductos = BigDecimal.ZERO;
-            BigDecimal totalEnvio = BigDecimal.ZERO;
-            
+
             for (LineaPedido linea : lineas) {
-                BigDecimal totalLinea = linea.getPrecioVenta().multiply(BigDecimal.valueOf(linea.getCantidad()));
-                totalProductos = totalProductos.add(totalLinea);
-                totalEnvio = totalEnvio.add(linea.getGastosEnvio() != null ? linea.getGastosEnvio() : BigDecimal.ZERO);
+                var articulo = articuloRepository.findById(linea.getIdArticulo());
+                if (articulo.isPresent()) {
+                    BigDecimal precio = articulo.get().getPrecioVenta();
+                    totalProductos = totalProductos.add(precio.multiply(BigDecimal.valueOf(linea.getCantidad())));
+                }
             }
-            
+
             pedido.setTotalProductos(totalProductos);
-            pedido.setEnvioTotal(totalEnvio);
+            // null safety
+            if (pedido.getTotalProductos() == null) pedido.setTotalProductos(BigDecimal.ZERO);
+            
+            // Recalcular descuento si es premium
+            BigDecimal descuento = BigDecimal.ZERO;
+            var cliente = clienteRepository.findById(pedido.getIdCliente());
+            if (cliente.isPresent() && cliente.get().getEsPremium()) {
+                descuento = totalProductos.multiply(BigDecimal.valueOf(0.30));
+            }
+
+            pedido.setDescuentoAplicado(descuento);
+            // Subtotal
+            BigDecimal subtotal = totalProductos.subtract(descuento);
+            pedido.setSubtotalConDescuento(subtotal);
+
             repository.save(pedido);
         });
     }

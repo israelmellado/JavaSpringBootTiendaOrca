@@ -5,10 +5,8 @@
     <title>Detalle Pedido - Tienda ORCA</title>
     <link rel="stylesheet" th:href="@{/estilo.css}">
     <style>
-        .tabla-datos td, .tabla-datos th {
-            font-size: 11px;
-            padding: 4px 5px;
-        }
+        .tabla-datos { width: 100%; table-layout: fixed; border-collapse: collapse; }
+        .tabla-datos th, .tabla-datos td { font-size: 10px; padding: 2px 4px; }
     </style>
 </head>
 <body>
@@ -20,63 +18,87 @@
     </div>
 
     <div class="container">
-        <!-- Añadir artículo -->
         <div class="panel">
-            <h2>➕ Añadir Artículo</h2>
-            
+            <p>Cliente: <span th:text="${pedido.idCliente}">id</span></p>
+            <p>Fecha: <span th:text="${#temporals.day(pedido.fechaHora)}"></span>/<span th:text="${#temporals.month(pedido.fechaHora)}"></span>/<span th:text="${#temporals.year(pedido.fechaHora)}"></span></p>
+            <p>Estado: <span th:text="${pedido.estado}">estado</span></p>
+        </div>
+
+        <div class="panel" th:if="${pedido.estado == 'PENDIENTE'}">
+            <h2>Añadir Artículo</h2>
             <form th:action="@{/pedidos/añadir-linea}" method="post">
                 <input type="hidden" name="idPedido" th:value="${pedido.id}">
-                
-                <div class="form-grid" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <div style="display:flex; gap:10px; align-items:center;">
                     <div class="form-group">
                         <label>Artículo *</label>
                         <select name="idArticulo" required>
                             <option value="">-- Seleccionar --</option>
                             <option th:each="articulo : ${articulos}" 
                                     th:value="${articulo.id}" 
-                                    th:text="${articulo.codigoId} + ' - ' + ${articulo.descripcion} + ' (' + ${articulo.precioVenta} + ' €)'">
-                                Artículo
+                                    th:text="${articulo.codigoId} + ' - ' + ${articulo.descripcion} + ' (Stock: ' + ${articulo.stock} + ')'">
                             </option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
                         <label>Cantidad *</label>
                         <input type="number" name="cantidad" value="1" min="1" required style="width:60px;">
                     </div>
-                    
                     <button type="submit" class="btn btn-warning">Añadir</button>
                 </div>
             </form>
         </div>
 
-        <!-- Líneas del pedido -->
         <div class="panel">
             <h2>Artículos</h2>
-            
-            <table class="tabla-datos">
+            <table class="tabla-datos" style="width:100%;">
                 <thead>
                     <tr>
-                        <th>Código</th>
+                        <th>Cód.</th>
                         <th>Artículo</th>
                         <th>Cant.</th>
                         <th>Precio</th>
-                        <th>Envío</th>
+                        <th>Descuento</th>
+                        <th>Descuento valor</th>
+                        <th>Importe</th>
                         <th>Total</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <th:block th:each="linea : ${lineas}">
+                    <th:block th:with="articulo=${articulosMap[linea.idArticulo]}">
                     <tr>
-                        <td th:text="${linea.idArticulo}">id</td>
-                        <td>Artículo</td>
+                        <td th:text="${articulo?.codigoId}">código</td>
+                        <td th:text="${articulo?.descripcion}">artículo</td>
                         <td th:text="${linea.cantidad}">cant</td>
-                        <td th:text="${linea.precioVenta} + ' €'">0 €</td>
-                        <td th:text="${linea.gastosEnvio} + ' €'">0 €</td>
-                        <td th:text="${linea.total} + ' €'">0 €</td>
+                        <td th:text="${articulo?.precioVenta} + ' €'">precio</td>
+                    <td>
+                        <th:block th:if="${esPremium}">30%</th:block>
+                        <th:block th:unless="${esPremium}">-</th:block>
+                    </td>
+                    <td>
+                        <th:block th:if="${esPremium}">
+                            <span th:text="'-' + ${#numbers.formatDecimal(((articulo?.precioVenta ?: T(java.math.BigDecimal).ZERO) * linea.cantidad) * 0.30, 1, 2)} + ' €'">dto €</span>
+                        </th:block>
+                        <th:block th:unless="${esPremium}">-</th:block>
+                    </td>
+                    <td th:text="${(articulo?.precioVenta ?: T(java.math.BigDecimal).ZERO) * linea.cantidad} + ' €'">importe</td>
+                    <td>
+                        <th:block th:if="${esPremium}">
+                            <span style="color:green;" th:text="${((articulo?.precioVenta ?: T(java.math.BigDecimal).ZERO) * linea.cantidad) * 0.7} + ' €'">total</span>
+                        </th:block>
+                        <th:block th:unless="${esPremium}">
+                            <span th:text="${(articulo?.precioVenta ?: T(java.math.BigDecimal).ZERO) * linea.cantidad} + ' €'">total</span>
+                        </th:block>
+                    </td>
+                        <td>
+                            <form th:action="@{/pedidos/eliminar-linea/{id}(id=${linea.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-danger" style="padding:1px 3px; font-size:8px;">X</button>
+                            </form>
+                        </td>
                     </tr>
                     </th:block>
-                    
+                    </th:block>
                     <tr th:if="${#lists.isEmpty(lineas)}">
                         <td colspan="6" style="text-align:center; color:#888;">Sin artículos</td>
                     </tr>
@@ -84,22 +106,22 @@
             </table>
         </div>
 
-        <!-- Totales -->
         <div class="panel">
             <div style="text-align:right;">
-                <p>Productos: <span th:text="${pedido.totalProductos} + ' €'">0 €</span></p>
-                <p>Envío: <span th:text="${pedido.envioTotal} + ' €'">0 €</span></p>
-                <p><strong>Total: <span th:text="${pedido.totalProductos.add(pedido.envioTotal)} + ' €'">0 €</span></strong></p>
+                <p>Subtotal: <span th:text="${pedido.totalProductos} + ' €'">0 €</span></p>
+                <p th:if="${esPremium}">
+                    Descuento (30%): <span th:text="'-' + ${pedido.descuentoAplicado} + ' €'">0 €</span>
+                </p>
+                <p><strong>Total: <span th:text="${pedido.subtotalConDescuento} + ' €'">0 €</strong></p>
             </div>
-            
-            <!-- Finalizar/Cancelar -->
-            <form th:action="@{/pedidos/finalizar/{id}(id=${pedido.id})}" method="post" style="display:inline;">
-                <button type="submit" class="btn btn-primary" onclick="return confirm('¿Finalizar pedido?')">Finalizar</button>
-            </form>
-            
-            <form th:action="@{/pedidos/cancelar/{id}(id=${pedido.id})}" method="post" style="display:inline;">
-                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Cancelar pedido?')">Cancelar</button>
-            </form>
+            <div th:if="${pedido.estado == 'PENDIENTE'}" style="display:flex; gap:10px;">
+                <form th:action="@{/pedidos/finalizar/{id}(id=${pedido.id})}" method="post">
+                    <button type="submit" class="btn btn-primary" onclick="return confirm('¿Finalizar pedido?')">Finalizar</button>
+                </form>
+                <form th:action="@{/pedidos/cancelar/{id}(id=${pedido.id})}" method="post">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Cancelar pedido?')">Cancelar</button>
+                </form>
+            </div>
         </div>
     </div>
 </body>
