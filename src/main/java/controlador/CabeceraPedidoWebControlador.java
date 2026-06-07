@@ -152,7 +152,7 @@ public class CabeceraPedidoWebControlador {
             BigDecimal subtotal = totalBase.subtract(descuento);
             pedido.setSubtotalConDescuento(subtotal);
             pedido.setTotalFinal(subtotal.add(envio));
-            pedido.setEstado("FINALIZADO");
+            pedido.setEstado("PENDIENTE");
             repository.save(pedido);
         });
 
@@ -170,18 +170,44 @@ public class CabeceraPedidoWebControlador {
         
         return "redirect:/pedidos";
     }
-
     // POST - Cancelar pedido
     @PostMapping("/cancelar/{id}")
     public String cancelar(@PathVariable Integer id, Model model) {
-        
-        repository.findById(id).ifPresent(pedido -> {
-            lineaRepository.deleteByIdPedido(id);
-            repository.delete(pedido);
-        });
-        
+        return repository.findById(id).map(pedido -> {
+            pedido.setEstado("CANCELADO");
+            repository.save(pedido);
+            return "redirect:/pedidos";
+        }).orElse("redirect:/pedidos");
+    }
+    
+    //POST - Cancelar linea pedido
+    @PostMapping("/eliminar-linea/{id}")
+    public String eliminarLinea(@PathVariable Integer id, Model model) {
+        var lineaOpt = lineaRepository.findById(id);
+        if (lineaOpt.isPresent()) {
+            LineaPedido linea = lineaOpt.get();
+            Integer idPedido = linea.getIdPedido();
+            Integer cantidad = linea.getCantidad();
+
+            // Devolver stock al artículo
+            var articuloOpt = articuloRepository.findById(linea.getIdArticulo());
+            if (articuloOpt.isPresent()) {
+                Articulo articulo = articuloOpt.get();
+                Integer stockActual = articulo.getStock() != null ? articulo.getStock() : 0;
+                articulo.setStock(stockActual + cantidad);
+                articuloRepository.save(articulo);
+            }
+
+            lineaRepository.delete(linea);
+
+            // Recalcular totales
+            recalcularTotales(idPedido);
+
+            return "redirect:/pedidos/detalle/" + idPedido;
+        }
         return "redirect:/pedidos";
     }
+    //Recalculo de los totales
     private void recalcularTotales(Integer idPedido) {
         repository.findById(idPedido).ifPresent(pedido -> {
             List<LineaPedido> lineas = lineaRepository.findByIdPedido(idPedido);
@@ -215,7 +241,7 @@ public class CabeceraPedidoWebControlador {
             repository.save(pedido);
         });
     }
-
+    //Crear número de pedido nuevo, único y consecutivo   
     private String generarNumeroPedido() {
         Random random = new Random();
         String numPedido;

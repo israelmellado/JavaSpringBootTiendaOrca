@@ -118,8 +118,8 @@
                 <form th:action="@{/pedidos/finalizar/{id}(id=${pedido.id})}" method="post">
                     <button type="submit" class="btn btn-primary" onclick="return confirm('¿Finalizar pedido?')">Finalizar</button>
                 </form>
-                <form th:action="@{/pedidos/cancelar/{id}(id=${pedido.id})}" method="post">
-                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Cancelar pedido?')">Cancelar</button>
+                <form th:action="@{/pedidos/cancelar/{id}(id=${pedido.id})}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-danger" style="padding:1px 3px; font-size:8px;" onclick="return confirm('¿Cancelar pedido?')">Cancelar</button>
                 </form>
             </div>
         </div>
