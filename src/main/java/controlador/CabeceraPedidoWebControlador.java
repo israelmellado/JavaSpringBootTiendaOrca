@@ -16,12 +16,14 @@ import java.util.Random;
 @Controller
 @RequestMapping("/pedidos")
 public class CabeceraPedidoWebControlador {
-
+    
+    // Variables
     private final CabeceraPedidoRepositorio repository;
     private final LineaPedidoRepositorio lineaRepository;
     private final ClienteRepositorio clienteRepository;
     private final ArticuloRepositorio articuloRepository;
-
+    
+    //Constructor
     public CabeceraPedidoWebControlador(CabeceraPedidoRepositorio repository,
                                     LineaPedidoRepositorio lineaRepository,
                                     ClienteRepositorio clienteRepository,
