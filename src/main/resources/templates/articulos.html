@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión Artículos - Tienda ORCA</title>
+    <link rel="stylesheet" th:href="@{/estilo.css}">
+    <style>
+        .fila-editar { display: none; background: #fff3cd; }
+        .fila-editar.show { display: table-row; }
+        .fila-editar td { padding: 10px; }
+        .fila-editar form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .fila-editar input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+    </style>
+    <script>
+        function mostrarEditar(id) {
+            document.querySelectorAll('.fila-editar').forEach(function(f) { f.classList.remove('show'); });
+            document.getElementById('editar-' + id).classList.add('show');
+        }
+        function cancelarEditar() {
+            document.querySelectorAll('.fila-editar').forEach(function(f) { f.classList.remove('show'); });
+        }
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>🛒 Tienda ORCA - Artículos</h1>
+        <div>
+            <a th:href="@{/menu}"><button class="btn btn-info">Volver</button></a>
+            <a th:href="@{/logout}"><button class="btn btn-danger">Cerrar Sesión</button></a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Mensajes -->
+        <div th:if="${mensaje}" class="mensaje mensaje-exito">
+            <span th:text="${mensaje}"></span>
+        </div>
+        <div th:if="${error}" class="mensaje mensaje-error">
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <a th:href="@{/articulos}"><button class="tab" th:classappend="${activa == 'activos'} ? 'active'">Activos</button></a>
+            <a th:href="@{/articulos/baja}"><button class="tab" th:classappend="${activa == 'baja'} ? 'active'">En Baja</button></a>
+        </div>
+
+        <!-- Panel Nuevo Artículo -->
+        <div class="panel" th:if="${activa == 'activos'}">
+            <h2>➕ Nuevo Artículo</h2>
+            <form th:action="@{/articulos}" method="post">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Código *</label>
+                        <input type="text" name="codigoId" required placeholder="ej: ART001">
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción *</label>
+                        <input type="text" name="descripcion" required placeholder="Nombre del producto">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio Venta (€) *</label>
+                        <input type="number" name="precioVenta" step="0.01" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Gastos Envío (€)</label>
+                        <input type="number" name="gastosEnvio" step="0.01" value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Tiempo Preparación (min)</label>
+                        <input type="number" name="tiempoPreparacion" value="5" min="1" max="15">
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Inicial</label>
+                        <input type="number" name="stock" value="0" min="0">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Artículo</button>
+            </form>
+        </div>
+
+        <!-- Lista de Artículos -->
+        <div class="panel">
+            <h2 th:text="${activa == 'baja'} ? '📦 Artículos en Baja' : '📦 Artículos Activos'"></h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descripción</th>
+                        <th>Precio</th>
+                        <th>Tiempo</th>
+                        <th>Gastos</th>
+                        <th>Stock</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- INICIO DEL th:each - incluye la fila de edición DENTRO -->
+                    <th:block th:each="articulo : ${articulos}">
+                    <tr>
+                        <td th:text="${articulo.codigoId}">CODIGO</td>
+                        <td th:text="${articulo.descripcion}">Descripción</td>
+                        <td th:text="${articulo.precioVenta} + ' €'">0.00 €</td>
+                        <td th:text="${articulo.tiempoPreparacion} + ' min'">0 min</td>
+                        <td th:text="${articulo.gastosEnvio} + ' €'">0 €</td>
+                        <td th:text="${articulo.stock}">0</td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${articulo.fechaBaja == null} ? 'badge-success' : 'badge-danger'"
+                                  th:text="${articulo.fechaBaja == null} ? 'Activo' : 'Baja'">
+                                Estado
+                            </span>
+                        </td>
+                        <td class="acciones">
+                            <div th:if="${articulo.fechaBaja == null}">
+                                <button type="button" class="btn btn-warning" 
+                                        th:onclick="'mostrarEditar(' + ${articulo.id} + ')'">✏️</button>
+                                <form th:action="@{/articulos/eliminar}" method="post" style="display:inline;">
+                                    <input type="hidden" name="id" th:value="${articulo.id}">
+                                    <button type="submit" class="btn btn-danger" 
+                                            onclick="return confirm('¿Dar de baja?')">🗑️</button>
+                                </form>
+                            </div>
+                            <div th:if="${articulo.fechaBaja != null}">
+                                <form th:action="@{/articulos/reactivar}" method="post">
+                                    <input type="hidden" name="id" th:value="${articulo.id}">
+                                    <button type="submit" class="btn btn-primary">♻️ Reactivar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Fila de edición (DENTRO del th:each) -->
+                    <tr th:id="'editar-' + ${articulo.id}" class="fila-editar">
+                        <td colspan="8">
+                            <form th:action="@{/articulos/guardar-modificacion}" method="post">
+                                <input type="hidden" name="id" th:value="${articulo.id}">
+                                
+                                <label>Código:</label>
+                                <input type="text" name="codigoId" th:value="${articulo.codigoId}" style="width:80px;">
+                                
+                                <label>Descripción:</label>
+                                <input type="text" name="descripcion" th:value="${articulo.descripcion}" style="width:150px;">
+                                
+                                <label>Precio:</label>
+                                <input type="number" name="precioVenta" th:value="${articulo.precioVenta}" style="width:70px;">
+                                
+                                <label>Tiempo:</label>
+                                <input type="number" name="tiempoPreparacion" th:value="${articulo.tiempoPreparacion}" style="width:50px;">
+                                
+                                <label>Gastos:</label>
+                                <input type="number" name="gastosEnvio" th:value="${articulo.gastosEnvio}" style="width:60px;">
+                                
+                                <label>Stock:</label>
+                                <input type="number" name="stock" th:value="${articulo.stock}" style="width:50px;">
+                                
+                                <button type="submit" class="btn btn-primary">💾 Guardar</button>
+                                <button type="button" class="btn btn-danger" onclick="cancelarEditar()">✖ Cancelar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </th:block>
+                    <!-- FIN DEL th:each -->
+                    
+                    <tr th:if="${#lists.isEmpty(articulos)}">
+                        <td colspan="8" style="text-align:center; color:#888;">
+                            No hay artículos
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Menú - Tienda ORCA</title>
+    
+   <link rel="stylesheet" th:href="@{/estilo.css}">
+</head>
+<body>
+    <div class="menu-container">
+        <h1>Tienda ORCA</h1>
+        <p>Bienvenido</p>
+        
+        <div class="menu-opciones">
+            <a th:href="@{/articulos}" class="btn-menu">📦 Artículos</a>
+            <a th:href="@{/clientes}" class="btn-menu">👥 Clientes</a>
+            <a th:href="@{/pedidos}" class="btn-menu">📋 Pedidos</a>
+            <a th:href="@{/admin}" class="btn-menu">⚙️ Gestión</a>
+        </div>
+        
+        <br>
+        <a th:href="@{/logout}" class="btn-cerrar">Cerrar Sesión</a>
+    </div>
+</body>
+</html>
