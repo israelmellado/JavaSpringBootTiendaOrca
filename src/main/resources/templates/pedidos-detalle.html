@@ -19,7 +19,7 @@
 
     <div class="container">
         <div class="panel">
-            <p>Cliente: <span th:text="${pedido.idCliente}">id</span></p>
+            <p>Cliente: <span th:text="${nombreCliente}">id</span></p>
             <p>Fecha: <span th:text="${#temporals.day(pedido.fechaHora)}"></span>/<span th:text="${#temporals.month(pedido.fechaHora)}"></span>/<span th:text="${#temporals.year(pedido.fechaHora)}"></span></p>
             <p>Estado: <span th:text="${pedido.estado}">estado</span></p>
         </div>

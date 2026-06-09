@@ -87,9 +87,13 @@ public class CabeceraPedidoWebControlador {
 
             // Verificar si cliente es premium
             boolean esPremium = false;
+            String nombreCliente = "Cliente #" + pedido.getIdCliente();
             var cliente = clienteRepository.findById(pedido.getIdCliente());
-            if (cliente.isPresent() && cliente.get().getEsPremium()) {
-                esPremium = true;
+            if (cliente.isPresent()) {
+                nombreCliente = cliente.get().getNombre();
+                if (cliente.get().getEsPremium() != null && cliente.get().getEsPremium()) {
+                    esPremium = true;
+                }
             }
 
             model.addAttribute("pedido", pedido);
@@ -97,6 +101,7 @@ public class CabeceraPedidoWebControlador {
             model.addAttribute("articulosMap", articulosMap);
             model.addAttribute("articulos", articuloRepository.findByFechaBajaIsNull());
             model.addAttribute("esPremium", esPremium);
+            model.addAttribute("nombreCliente", nombreCliente);
             return "pedidos-detalle";
         }).orElse("redirect:/pedidos");
     }
