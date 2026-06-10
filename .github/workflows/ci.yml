@@ -1,4 +1,4 @@
-yamlname: CI Java con NetBeans
+name: CI (Integración Continua) Java con NetBeans
 
 on:
   push:
