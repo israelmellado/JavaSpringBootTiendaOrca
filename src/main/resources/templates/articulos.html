@@ -20,6 +20,15 @@
         function cancelarEditar() {
             document.querySelectorAll('.fila-editar').forEach(function(f) { f.classList.remove('show'); });
         }
+        /*Deplegar nuevo articulo*/
+        function toggleFormulario() {
+            var panel = document.getElementById('panel-nuevo');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
     </script>
 </head>
 <body>
@@ -49,36 +58,39 @@
 
         <!-- Panel Nuevo Artículo -->
         <div class="panel" th:if="${activa == 'activos'}">
-            <h2>➕ Nuevo Artículo</h2>
-            <form th:action="@{/articulos}" method="post">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Código *</label>
-                        <input type="text" name="codigoId" required placeholder="ej: ART001">
+            <h2 style="cursor:pointer;" onclick="toggleFormulario()">➕ Nuevo Artículo ▾</h2>
+            
+            <div id="panel-nuevo" style="display:none;">
+                <form th:action="@{/articulos}" method="post">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Código *</label>
+                            <input type="text" name="codigoId" required placeholder="ej: ART001">
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción *</label>
+                            <input type="text" name="descripcion" required placeholder="Nombre del producto">
+                        </div>
+                        <div class="form-group">
+                            <label>Precio Venta (€) *</label>
+                            <input type="number" name="precioVenta" step="0.01" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Gastos Envío (€)</label>
+                            <input type="number" name="gastosEnvio" step="0.01" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Tiempo Preparación (min)</label>
+                            <input type="number" name="tiempoPreparacion" value="5" min="1" max="15">
+                        </div>
+                        <div class="form-group">
+                            <label>Stock Inicial</label>
+                            <input type="number" name="stock" value="0" min="0">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Descripción *</label>
-                        <input type="text" name="descripcion" required placeholder="Nombre del producto">
-                    </div>
-                    <div class="form-group">
-                        <label>Precio Venta (€) *</label>
-                        <input type="number" name="precioVenta" step="0.01" required min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Gastos Envío (€)</label>
-                        <input type="number" name="gastosEnvio" step="0.01" value="0" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Tiempo Preparación (min)</label>
-                        <input type="number" name="tiempoPreparacion" value="5" min="1" max="15">
-                    </div>
-                    <div class="form-group">
-                        <label>Stock Inicial</label>
-                        <input type="number" name="stock" value="0" min="0">
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary">Guardar Artículo</button>
-            </form>
+                    <button type="submit" class="btn btn-primary">Guardar Artículo</button>
+                </form>
+            </div>    
         </div>
 
         <!-- Lista de Artículos -->
