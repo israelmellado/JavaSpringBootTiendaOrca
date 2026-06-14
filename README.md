@@ -21,6 +21,9 @@
    - Frontend: Thymeleaf + Bootstrap 5
    - Seguridad: Spring Security
    - Build: Maven
+## 📖 Documentación del Sistema
+
+Para conocer en detalle las reglas de negocio del ERP (Artículos, Clientes Premium, Estados de Pedidos) y la integración del asistente de IA local, consulta la [Especificación de la Arquitectura del ERP](architecture-erp.md).
 
 ## 📂 Estructura del Proyecto
 ```
