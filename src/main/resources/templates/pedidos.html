@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Gestión Pedidos - Tienda ORCA</title>
     <link rel="stylesheet" th:href="@{/estilo.css}">
+    <link rel="stylesheet" th:href="@{/chatbot.css}">
     <style>
         /* Botones pequeños para pedidos */
         .btn-ver { padding: 2px 6px; font-size: 12px !important; }
@@ -154,5 +155,32 @@
             </table>
         </div>
     </div>
+    <div th:replace="~{chatbot :: widget}"></div>
+    <!-- Lógica JavaScript para contraer y expandir -->
+    <script th:inline="javascript">
+       document.addEventListener("DOMContentLoaded", function() {
+                const chatbot = document.getElementById("chatbot-widget");
+                const icon = document.getElementById("chatbot-toggle-icon");
+                const tieneRespuesta = chatbot.getAttribute("data-tiene-respuesta") === "true";
+                
+                if (tieneRespuesta) {
+                    chatbot.classList.remove("collapsed");
+                    icon.textContent = "▼";
+                }
+            });
+
+            function toggleChatbot() {
+                const chatbot = document.getElementById("chatbot-widget");
+                const icon = document.getElementById("chatbot-toggle-icon");
+                
+                if (chatbot.classList.contains("collapsed")) {
+                    chatbot.classList.remove("collapsed");
+                    icon.textContent = "▼";
+                } else {
+                    chatbot.classList.add("collapsed");
+                    icon.textContent = "▲";
+                }
+            }
+        </script>
 </body>
 </html>
