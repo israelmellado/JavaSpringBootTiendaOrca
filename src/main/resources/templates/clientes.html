@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:fmt="http://java.sun.com/jsp/jstl/fmt">/*Formato fecha europeo*/
+      xmlns:fmt="http://java.sun.com/jsp/jstl/fmt">
+   
 <head>
     <meta charset="UTF-8">
     <title>Gestión Clientes - Tienda ORCA</title>
     <link rel="stylesheet" th:href="@{/estilo.css}">
     <link rel="stylesheet" th:href="@{/cliente.css}">
+    <link rel="stylesheet" th:href="@{/chatbot.css}">
     <script>
         function mostrarEditar(id) {
             document.querySelectorAll('.fila-editar').forEach(function(f) { f.classList.remove('show'); });
@@ -224,5 +226,32 @@
             </table>
         </div>
     </div>
+    <div th:replace="~{chatbot :: widget}"></div>
+    <!-- Lógica JavaScript para contraer y expandir -->
+    <script th:inline="javascript">
+       document.addEventListener("DOMContentLoaded", function() {
+                const chatbot = document.getElementById("chatbot-widget");
+                const icon = document.getElementById("chatbot-toggle-icon");
+                const tieneRespuesta = chatbot.getAttribute("data-tiene-respuesta") === "true";
+                
+                if (tieneRespuesta) {
+                    chatbot.classList.remove("collapsed");
+                    icon.textContent = "▼";
+                }
+            });
+
+            function toggleChatbot() {
+                const chatbot = document.getElementById("chatbot-widget");
+                const icon = document.getElementById("chatbot-toggle-icon");
+                
+                if (chatbot.classList.contains("collapsed")) {
+                    chatbot.classList.remove("collapsed");
+                    icon.textContent = "▼";
+                } else {
+                    chatbot.classList.add("collapsed");
+                    icon.textContent = "▲";
+                }
+            }
+        </script>
 </body>
 </html>

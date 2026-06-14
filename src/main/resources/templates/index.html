@@ -2,8 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Menú - Tienda ORCA</title>
+    <link rel="stylesheet" th:href="@{/estilo.css}">
+    <link rel="stylesheet" th:href="@{/index.css}">
+    <link rel="stylesheet" th:href="@{/chatbot.css}">
     
-   <link rel="stylesheet" th:href="@{/estilo.css}">
 </head>
 <body>
     <div class="menu-container">
@@ -20,5 +22,33 @@
         <br>
         <a th:href="@{/logout}" class="btn-cerrar">Cerrar Sesión</a>
     </div>
+    <div th:replace="~{chatbot :: widget}"></div>
+    <!-- Lógica JavaScript para contraer y expandir -->
+    <script th:inline="javascript">
+       document.addEventListener("DOMContentLoaded", function() {
+                const chatbot = document.getElementById("chatbot-widget");
+                const icon = document.getElementById("chatbot-toggle-icon");
+                const tieneRespuesta = chatbot.getAttribute("data-tiene-respuesta") === "true";
+                
+                if (tieneRespuesta) {
+                    chatbot.classList.remove("collapsed");
+                    icon.textContent = "▼";
+                }
+            });
+
+            function toggleChatbot() {
+                const chatbot = document.getElementById("chatbot-widget");
+                const icon = document.getElementById("chatbot-toggle-icon");
+                
+                if (chatbot.classList.contains("collapsed")) {
+                    chatbot.classList.remove("collapsed");
+                    icon.textContent = "▼";
+                } else {
+                    chatbot.classList.add("collapsed");
+                    icon.textContent = "▲";
+                }
+            }
+        </script>
+    
 </body>
 </html>

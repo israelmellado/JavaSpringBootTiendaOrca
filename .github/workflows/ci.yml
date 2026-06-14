@@ -1,0 +1,25 @@
+name: CI (Integración Continua) Java con NetBeans
+
+on:
+  push:
+    branches: [ main, cabeceraPedidos ] 
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Descargar codigo
+      uses: actions/checkout@v4
+
+    - name: Configurar Java JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17' 
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Compilar con Maven (Omitiendo pruebas por ahora)
+      run: mvn -B package -DskipTests

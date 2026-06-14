@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head></head>
+<body>
+
+    <!-- Definimos el fragmento llamado 'widget' -->
+    <div th:fragment="widget">
+        
+        <div id="chatbot-widget" class="chatbot-container collapsed" th:data-tiene-respuesta="${session.respuestaIA != null}">
+            <!-- Cabecera -->
+            <div class="chatbot-header" onclick="toggleChatbot()">
+                <span class="chatbot-title">💬 Asistente Tienda ORCA</span>
+                <span id="chatbot-toggle-icon" class="chatbot-icon">▲</span>
+            </div>
+
+            <!-- Cuerpo -->
+            <div id="chatbot-body" class="chatbot-body">
+                <div class="chatbot-messages">
+                    <!-- Leer pregunta desde la sesión -->
+                    <div th:if="${session.preguntaIA}" class="message user-message">
+                        <strong style="color: #2563eb;">Tú:</strong> <span th:text="${session.preguntaIA}"></span>
+                    </div>
+
+                    <!-- Leer respuesta desde la sesión -->
+                    <div th:if="${session.respuestaIA}" class="message bot-message">
+                        <strong style="color: #059669;">Bot:</strong> 
+                        <p style="white-space: pre-wrap; margin: 5px 0 0 0;" th:text="${session.respuestaIA}"></p>
+                    </div>
+
+                    <div th:unless="${session.respuestaIA}" class="message bot-message">
+                        <span>¡Hola! ¿En qué puedo ayudarte hoy con nuestros móviles, portátiles o material de oficina?</span>
+                    </div>
+                </div>
+
+                <!-- Formulario -->
+                <form th:action="@{/chat-ia}" method="post" class="chatbot-form">
+                    <input type="text" name="pregunta" placeholder="Escribe tu consulta aquí..." required autocomplete="off" />
+                    <button type="submit">Enviar</button>
+                </form>
+            </div>
+        </div>
+    </div>
