@@ -39,6 +39,8 @@ public class CabeceraPedido {
 
     @Column(name = "estado")
     private String estado;
+    //---DASHBOARD-------------------
+    
 
     // Constructores
     public CabeceraPedido() {}
@@ -53,10 +55,12 @@ public class CabeceraPedido {
         this.envioTotal = BigDecimal.ZERO;
         this.totalFinal = BigDecimal.ZERO;
         this.estado = "PENDIENTE";
+        
     }
-
     // Getters y Setters
-    public Integer getId() { return id; }
+ 
+
+    public Integer getId() {return id;}
     public void setId(Integer id) { this.id = id; }
 
     public String getNumPedido() { return numPedido; }

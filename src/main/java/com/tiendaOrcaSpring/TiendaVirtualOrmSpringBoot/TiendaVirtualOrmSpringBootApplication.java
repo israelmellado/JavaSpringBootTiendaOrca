@@ -5,19 +5,32 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+//import org.springframework.boot.persistence.autoconfigure.EntityScan;
+//import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication(exclude = {UserDetailsServiceAutoConfiguration.class})
 @EnableJpaRepositories("repositorio")
 @EntityScan("modelo")
-@ComponentScan("config")
-@ComponentScan({"controlador", "config"})
+@ComponentScan({
+    "controlador",
+    "servicio",
+    "repositorio",
+    "config"
+})
+
 public class TiendaVirtualOrmSpringBootApplication {
 
     public static void main(String[] args) {
         System.out.println("========================================");
         System.out.println("INICIANDO APP...");
         System.out.println("========================================");
+        System.out.println("=== DEBUG MCP START ===");
+        
+        System.out.println("JAVA VERSION: " + System.getProperty("java.version"));
+        System.out.println("PATH: " + System.getenv("PATH"));
+        System.out.println("PYTHON: " + System.getenv("PYTHON"));
+        System.out.println("=== END ENV ===");
         
         SpringApplication.run(TiendaVirtualOrmSpringBootApplication.class, args);
         

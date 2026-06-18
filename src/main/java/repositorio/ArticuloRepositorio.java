@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Query;
 
 @Repository
 public interface ArticuloRepositorio extends JpaRepository<Articulo, Integer> {
@@ -25,4 +26,9 @@ public interface ArticuloRepositorio extends JpaRepository<Articulo, Integer> {
 
     // Artículos dados de baja
     List<Articulo> findByFechaBajaIsNotNull();
+    
+    //--------------------DASHBOARD----------------------------------------------//
+    // 📦 Sumar stock total de todos los artículos
+        @Query("SELECT COALESCE(SUM(a.stock), 0) FROM Articulo a WHERE a.fechaBaja IS NULL")
+    Integer sumarStockTotal();
 }
