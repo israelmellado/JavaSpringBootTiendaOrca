@@ -70,3 +70,133 @@ private final String CONTEXTO = """
        - CANCELAR: Pedido anulado.
     """;
 ```
+## 📊 4. Módulo Dashboard ERP
+
+El Dashboard proporciona una vista ejecutiva en tiempo real del estado del negocio utilizando datos agregados de la base de datos MySQL.
+
+### Indicadores principales (KPIs)
+
+El sistema calcula y muestra:
+
+| Indicador          | Descripción                                  |
+| ------------------ | -------------------------------------------- |
+| Total Artículos    | Número total de artículos registrados        |
+| Pedidos Pendientes | Pedidos en estado PENDIENTE                  |
+| Pedidos Enviados   | Pedidos en estado ENVIAR                     |
+| Pedidos Hoy        | Pedidos generados durante el día actual      |
+| Ingresos Totales   | Suma acumulada de ventas históricas          |
+| Ingresos Hoy       | Facturación generada durante la fecha actual |
+
+### Arquitectura
+
+```mermaid
+graph LR
+    A[MySQL] --> B[Repositorios JPA]
+    B --> C[DashboardServicio]
+    C --> D[DashboardDTO]
+    D --> E[DashboardControlador]
+    E --> F[Vista Thymeleaf]
+```
+
+### Objetivo futuro
+
+Implementar gráficos dinámicos mediante Chart.js para representar:
+
+* Ventas de los últimos 7 días.
+* Evolución de ingresos.
+* Pedidos por estado.
+* Clientes nuevos por periodo.
+
+### DTO Principal
+
+DashboardDTO centraliza todos los indicadores calculados para la vista.
+
+Actualmente incluye:
+
+* totalArticulos
+* pedidosPendientes
+* pedidosEnviados
+* pedidosHoy
+* ingresosTotales
+* ingresosHoy
+* ventasUltimos7Dias
+
+### Restricciones
+
+* El Dashboard es únicamente informativo.
+* No permite modificaciones directas sobre entidades.
+* Todas las métricas deben calcularse desde los repositorios JPA.
+
+## 🤖 5. Arquitectura LLM + MCP
+
+El ERP incorpora un asistente basado en modelos de lenguaje locales ejecutados mediante Ollama.
+
+### Modelo actual
+
+```text
+llama3.2:1b
+```
+
+Configuración principal:
+
+```properties
+spring.ai.ollama.base-url=http://localhost:11434
+spring.ai.ollama.chat.options.model=llama3.2:1b
+spring.ai.ollama.chat.options.temperature=0.3
+```
+
+### Objetivo del asistente
+
+Permitir consultas en lenguaje natural sobre:
+
+* Artículos.
+* Clientes.
+* Pedidos.
+* Reglas de negocio.
+* Métricas del Dashboard.
+
+Ejemplos:
+
+* "¿Cuántos pedidos pendientes existen?"
+* "¿Qué descuento tiene un cliente Premium?"
+* "¿Cuántos artículos hay registrados?"
+
+### MCP (Model Context Protocol)
+
+El proyecto incluye una integración experimental con MCP para permitir que el LLM invoque herramientas externas.
+
+Arquitectura prevista:
+
+```mermaid
+graph LR
+    A[Usuario] --> B[Chatbot ERP]
+    B --> C[LLM Ollama]
+    C --> D[MCP Client]
+    D --> E[MCP Server Python]
+    E --> F[MySQL]
+```
+
+### Estado actual
+
+| Componente        | Estado                  |
+| ----------------- | ----------------------- |
+| Ollama            | Operativo               |
+| Spring AI         | Operativo               |
+| Chat ERP          | Operativo               |
+| Dashboard         | Operativo               |
+| MCP Client        | En pruebas              |
+| MCP Server Python | Arranca correctamente   |
+| Tool Discovery    | Pendiente de validación |
+
+### Objetivo final
+
+Permitir consultas directas sobre la base de datos mediante herramientas MCP.
+
+Ejemplos previstos:
+
+* "Muéstrame los últimos pedidos."
+* "¿Qué clientes Premium existen?"
+* "¿Cuánto se ha facturado hoy?"
+* "Genera un resumen del Dashboard."
+
+El modelo nunca debe modificar datos sin confirmación explícita del usuario.
