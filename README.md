@@ -67,6 +67,114 @@ src/
    - Totales: productos, descuento, envío, final
    - Tiempo total de preparación
 
+## 🏛️ Arquitectura del Sistema
+
+La aplicación sigue una arquitectura monolítica basada en Spring Boot, organizada por capas para facilitar el mantenimiento y la evolución del proyecto.
+
+### Capas principales
+
+* **Controladores (Controller)**
+
+  * Gestionan las peticiones HTTP.
+  * Preparan los datos para las vistas Thymeleaf.
+  * Coordinan la interacción entre usuario y lógica de negocio.
+
+* **Servicios (Service)**
+
+  * Implementan las reglas de negocio.
+  * Validan operaciones y cálculos.
+  * Orquestan el acceso a los repositorios.
+
+* **Repositorios (Repository)**
+
+  * Acceso a datos mediante Spring Data JPA.
+  * Consultas derivadas y personalizadas.
+  * Abstracción de la persistencia.
+
+* **Entidades (Entity)**
+
+  * Representan el modelo de datos de la aplicación.
+  * Mapeadas mediante Hibernate/JPA.
+
+### Flujo general
+
+```text
+Usuario
+   ↓
+Controlador
+   ↓
+Servicio
+   ↓
+Repositorio
+   ↓
+MySQL
+```
+
+## 🔐 Seguridad
+
+La aplicación utiliza Spring Security para el control de acceso y autenticación de usuarios.
+
+### Características
+
+* Inicio de sesión mediante formulario.
+* Gestión de usuarios almacenados en base de datos.
+* Contraseñas cifradas mediante BCrypt.
+* Protección de rutas privadas.
+* Control de acceso basado en roles.
+
+## 🤖 Inteligencia Artificial Local (Experimental)
+
+El proyecto incorpora una línea de investigación basada en modelos de lenguaje locales ejecutados mediante Ollama.
+
+### Objetivos
+
+* Asistente para consulta de reglas de negocio.
+* Ayuda contextual dentro del ERP.
+* Generación de respuestas sobre pedidos, clientes y artículos.
+* Exploración de integración con MCP (Model Context Protocol).
+
+### Tecnologías utilizadas
+
+* Spring AI
+* Ollama
+* Llama 3.2
+* MCP (experimental)
+
+### Estado actual
+
+| Componente | Estado           |
+| ---------- | ---------------- |
+| Chat local | En desarrollo    |
+| Spring AI  | Integrado        |
+| Ollama     | Operativo        |
+| MCP Server | Experimental     |
+| MCP Tools  | En investigación |
+
+## 📈 Dashboard ERP
+
+La aplicación incluye un módulo de Dashboard destinado a ofrecer una visión rápida del estado del negocio.
+
+### Indicadores disponibles
+
+* Total de artículos registrados.
+* Pedidos pendientes.
+* Pedidos enviados.
+* Pedidos realizados durante el día.
+* Ingresos acumulados.
+* Ingresos diarios.
+
+### Objetivo futuro
+
+Incorporar métricas avanzadas mediante gráficos dinámicos:
+
+* Ventas de los últimos 7 días.
+* Evolución de ingresos.
+* Rendimiento comercial.
+* Indicadores de actividad.
+
+Este módulo tiene carácter informativo y no modifica datos del sistema.
+
+
 ## 📊 Modelo de Datos
 - Cliente
 
