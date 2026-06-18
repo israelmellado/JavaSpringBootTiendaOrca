@@ -1,0 +1,87 @@
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ERP Dashboard</title>
+    <link rel="stylesheet" th:href="@{/estilo.css}">
+    <link rel="stylesheet" th:href="@{/dashboard.css}">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="header">
+            <h1>📊 Dashboard ERP</h1>
+            <div>
+                <a th:href="@{/menu}"><button class="btn btn-info">Volver</button></a>
+                <a th:href="@{/logout}"><button class="btn btn-danger">Cerrar Sesión</button></a>
+            </div>
+     </div>
+
+
+<div class="grid">
+
+    <div class="card">
+        <h3>Artículos</h3>
+        <p th:text="${datos.totalArticulos}"></p>
+    </div>
+
+    <div class="card">
+        <h3>Pedidos pendientes</h3>
+        <p th:text="${datos.pedidosPendientes}"></p>
+    </div>
+
+    <div class="card">
+        <h3>Pedidos enviados</h3>
+        <p th:text="${datos.pedidosEnviados}"></p>
+    </div>
+
+    <div class="card">
+        <h3>Pedidos hoy</h3>
+        <p th:text="${datos.pedidosHoy}"></p>
+    </div>
+
+    <div class="card">
+        <h3>Ingresos totales</h3>
+        <p th:text="${datos.ingresosTotales}"></p>
+    </div>
+
+    <div class="card">
+        <h3>Ingresos hoy</h3>
+        <p th:text="${datos.ingresosHoy}"></p>
+    </div>
+
+</div>
+
+<hr>
+
+<h2>📈 Ventas últimos 7 días</h2>
+
+<canvas id="ventasChart"></canvas>
+
+    <script th:inline="javascript">
+
+        let datos = [[${datos.ventasUltimos7Dias}]];
+
+        let labels = datos.map(d => d.fecha);
+        let values = datos.map(d => d.total);
+
+        new Chart(document.getElementById('ventasChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ventas',
+                    data: values,
+                    fill: true
+                }]
+            }
+        });
+
+    </script>
+
+</body>
+</html>

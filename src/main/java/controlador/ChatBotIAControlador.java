@@ -1,86 +1,71 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package controlador;
 
-import org.springframework.http.*;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import java.util.*;
+
 
 @Controller
 public class ChatBotIAControlador {
 
-    private final String API_URL = "http://localhost:11434/api/chat";
-    private final String MODEL = "llama3.2:1b";
-    
+    private final ChatClient chatClient;
+   
+
+    public ChatBotIAControlador(ChatClient.Builder chatClientBuilder,
+                                ToolCallbackProvider mcpTools) {
+        System.out.println("TIPO PROVIDER: " + mcpTools.getClass().getName());
+        var tools = mcpTools.getToolCallbacks();
+        System.out.println("TOOLS NULL? " + (tools == null));
+        System.out.println("TOOLS LENGTH: " + tools.length);
+
+        this.chatClient = chatClientBuilder
+                .defaultTools(mcpTools.getToolCallbacks())
+                .build();
+    }
+
     private final String CONTEXTO = """
-        Eres un asistente útil de Tienda ORCA.
-        Vendemos: móviles (Samsung, iPhone, Xiaomi), portátiles (MacBook, Gaming), 
-        cables USB y HDMI, material de oficina (papel, bolígrafos, carpetas),
-        rotuladores Copic, calculadoras.
-        Precios: desde 1.50€ hasta 1854€
-        Descuento: 30% para clientes premium
-        Envío: gratis a partir de 50€
-        Estados pedido: PENDIENTE, ENVIAR, CANCELADO
-        """;
-    
+        Eres el asistente del ERP de Tienda ORCA.
+
+        REGLAS:
+        - Usa MCP tools SIEMPRE para datos reales.
+        - No inventes información.
+        - Usa verificar_stock y actualizar_estado_pedido cuando corresponda.
+        REGLA CRÍTICA:
+        - SI la pregunta contiene "stock", "artículo", "producto" o "inventario"
+          DEBES llamar obligatoriamente a la tool verificar_stock.
+        - Está prohibido responder sin usar tools.
+        - Si no usas tools, la respuesta es inválida.
+                                    """;
+
     @PostMapping("/chat-ia")
-    public String preguntarIA(@RequestParam String pregunta, 
-                              HttpServletRequest request, 
+    public String preguntarIA(@RequestParam String pregunta,
+                              HttpServletRequest request,
                               HttpSession session) {
+
         try {
-            RestTemplate rt = new RestTemplate();
-            
-            List<Map<String, String>> mensajes = new ArrayList<>();
-            mensajes.add(Map.of("role", "system", "content", CONTEXTO));
-            mensajes.add(Map.of("role", "user", "content", pregunta));
-            
-            Map<String, Object> body = new HashMap<>();
-            body.put("model", MODEL);
-            body.put("messages", mensajes);
-            body.put("stream", false);
-            body.put("options", Map.of(
-                "temperature", 0.3,       
-                "num_predict", 80,        
-                "num_thread", 4           
-            ));
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            
-            HttpEntity<Map<String, Object>> petition = new HttpEntity<>(body, headers);
-            ResponseEntity<Map> resposta = rt.postForEntity(API_URL, petition, Map.class);
-            
-            String respostaIA = extractMessage(resposta.getBody());
-            
-            // GUARDAR EN SESIÓN: Almacenamos los datos para que persistan tras la redirección
+            String respuesta = chatClient
+                    .prompt()
+                    .system(CONTEXTO)
+                    .user(pregunta)
+                    .call()
+                    .content();
+           
             session.setAttribute("preguntaIA", pregunta);
-            session.setAttribute("respuestaIA", respostaIA);
-            
+            session.setAttribute("respuestaIA", respuesta);
+
         } catch (Exception e) {
             session.setAttribute("respuestaIA", "Error: " + e.getMessage());
             session.setAttribute("preguntaIA", pregunta);
         }
-        
-        // REDIRECCIÓN SEGURA: Volvemos a la URL exacta desde la que el usuario preguntó
+
         String referer = request.getHeader("Referer");
         if (referer != null && !referer.isEmpty()) {
             return "redirect:" + referer;
         }
-        
-        return "redirect:/index"; 
-    }
-    
-    private String extractMessage(Map body) {
-        if (body != null && body.containsKey("message")) {
-            Map message = (Map) body.get("message");
-            return (String) message.get("content");
-        }
-        return "Sense resposta";
+        return "redirect:/index";
     }
 }
