@@ -2,7 +2,7 @@
  - El mismo proyecto monolito pero utilizando SpringBoot para conocimientos.
  - Dashboard, Chatbot, LLMs y MCP.
  - Ollama, Python
- - [![Java,Springboot, ollama](<img src="https://jsdelivr.net" alt="YouTube" width="40" height="40">
+ - [![Java,Springboot, ollama](<img src="https://youtube.com" alt="YouTube" width="40" height="40">
 )](https://youtu.be/86ETKryHBPw)
 ## 📦 Proyecto: Tienda Virtual ORCA
 
