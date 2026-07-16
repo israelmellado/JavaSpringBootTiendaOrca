@@ -2,7 +2,7 @@
  - El mismo proyecto monolito pero utilizando SpringBoot para conocimientos.
  - Dashboard, Chatbot, LLMs y MCP.
  - Ollama, Python
- - Video:▶️[Java,Springboot, ollama](https://youtu.be/86ETKryHBPw)
+ - Video:▶️[Java,Springboot, ollama](https://youtu.be/B3pYFmH0oD0)
 ## 📦 Proyecto: Tienda Virtual ORCA
 
 - Tienda online para gestión de pedidos de artículos de papelería y oficina.
